@@ -1,0 +1,385 @@
+<!--
+=========================================================
+Copyright &copy;  Chwmq. All Rights Reserved.
+项目名称：朋友取向趣味转盘
+原创代码，未经许可禁止冒充作者、倒卖、商用
+仅供好友之间娱乐使用
+=========================================================
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>免费查询你朋友是否为Gay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        .page {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .card {
+            background: #f8f8f8;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-bottom: 24px;
+            font-size: 22px;
+            color: #222;
+        }
+        .question-text {
+            font-size: 20px;
+            margin: 30px 0;
+            min-height: 60px;
+        }
+
+        /* 进度条样式新增 */
+        .progress-wrap{
+            width: 90%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 10px;
+            margin: 0 auto 12px;
+            overflow: hidden;
+        }
+        .progress-bar{
+            height: 100%;
+            background: #27ae60;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .progress-text{
+            font-size:14px;
+            color:#555;
+            margin-bottom:8px;
+        }
+
+        /* 警告样式 */
+        .warning-text {
+            color: #d92121;
+            font-size: 12px;
+            line-height: 1.6;
+            padding: 10px;
+            border: 1px solid #ff8888;
+            background: #fff2f2;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        /* 原创声明样式 */
+        .copyright h3{
+            font-size: 11px;
+            color: #666;
+            font-weight: normal;
+            margin-top: 16px;
+        }
+
+        input {
+            width: 85%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 18px;
+            outline: none;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            width: 80%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #27ae60;
+            color: white;
+            font-size: 17px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 8px auto;
+            display:block;
+        }
+        button:hover {
+            background: #219653;
+        }
+        .btn-no {
+            background: #e74c3c;
+        }
+        .btn-no:hover {
+            background: #c0392b;
+        }
+        .back-btn {
+            margin-top:8px;
+            background:#666 !important;
+        }
+
+        /* 转盘样式 红绿配色 动画时长改为0.1s */
+        .wheel-box {
+            position: relative;
+            width: min(320px,80vw);
+            height: min(320px,80vw);
+            margin: 30px auto;
+        }
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #27ae60 0deg 180deg,
+                #e74c3c 180deg 360deg
+            );
+            transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            border: 4px solid #333;
+        }
+        /* 转盘文字 */
+        .wheel-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        .text-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .text-male {
+            transform: rotate(90deg);
+        }
+        .text-female {
+            transform: rotate(270deg);
+        }
+        .text-item span {
+            display: inline-block;
+            transform: translateY(-5%);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 28px solid #333;
+            z-index: 10;
+        }
+        .center-circle {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            border: 2px solid #333;
+        }
+        .result-text {
+            font-size: 22px;
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 32px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 页面1：输入姓氏 -->
+<div class="page active" id="page1">
+    
+    <div class="card">
+        <h3>Chwmq荣誉出品</h3>
+        <br>
+        <h4>请输入你朋友的姓氏，我们将免费为你查询你朋友是否为Gay</h4>
+        <br>
+        <input type="text" id="surnameInput" placeholder="">
+        <br>
+        <button onclick="goQuestion()">开始问答测试</button>
+        <br>
+            <h5>Copyright &copy; Chwmq. All Rights Reserved.</h5>
+    </div>
+</div>
+
+<!-- 页面2：三餐依次问答页面【添加进度条】 -->
+<div class="page" id="questionPage">
+    <div class="card">
+        <h2>我们将通过3个问题来测试你朋友的性取向</h2>
+        <div class="progress-text" id="progressText">第1题 / 共3题</div>
+        <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar" style="width: 33.33%"></div>
+        </div>
+        <div class="question-text" id="questionBox"></div>
+        <button onclick="answerYes()">是</button>
+        <button class="btn-no" onclick="answerNo()">否</button>
+        <br>
+            <h3>Copyright &copy; Chwmq. All Rights Reserved.</h3>
+    </div>
+</div>
+
+<!-- 页面3：转盘界面 -->
+<div class="page" id="wheelPage">
+    <div class="card">
+        <h2><span id="showSurname"></span>先生是Gay吗？</h2>
+        <div class="wheel-box">
+            <div class="pointer"></div>
+            <div id="wheel">
+                <div class="wheel-text">
+                    <div class="text-item text-male"><span>是</span></div>
+                    <div class="text-item text-female"><span>否</span></div>
+                </div>
+                <div class="center-circle"></div>
+            </div>
+        </div>
+        <div class="result-text" id="result"></div>
+
+        <div class="warning-text">
+⚠️重要提示：
+1.本程序仅为朋友间娱乐整蛊工具，所有结果随机生成，不具备任何真实性；
+2.性取向属于公民人格隐私，请勿利用测试结果嘲讽、造谣、传播他人信息；
+3.随意揣测、公开议论他人隐私，可能涉嫌侵犯隐私权，需承担相应民事责任；
+        </div>
+
+        <button class="back-btn" onclick="backStart()">返回</button>
+        <br>
+            <h3>Copyright &copy; Chwmq. All Rights Reserved.</h3>
+    </div>
+</div>
+
+<script>
+    let surname = "";
+    let isRotating = false;
+    //问题列表
+    const questionList = [
+        "你朋友吃早餐了吗？",
+        "你朋友吃午餐了吗？",
+        "你朋友吃晚餐了吗？"
+    ];
+    let currentQ = 0;
+    let answerRecord = [];
+
+    //进入问答页
+    function goQuestion(){
+        surname = document.getElementById("surnameInput").value.trim();
+        if (!surname) {
+            alert("请输入姓氏！");
+            return;
+        }
+        // 禁用姓氏判断
+        if(surname === "翁"){
+            alert("该姓氏已被Chwmq禁用，无法进行查询！");
+            document.getElementById("surnameInput").value = "";
+            return;
+        }
+        currentQ = 0;
+        answerRecord = [];
+        switchPage("questionPage");
+        showQuestion();
+        updateProgress();
+    }
+
+    function showQuestion(){
+        document.getElementById("questionBox").innerText = questionList[currentQ];
+    }
+
+    // 更新进度条
+    function updateProgress(){
+        const total = questionList.length;
+        const now = currentQ + 1;
+        const percent = (now / total) * 100;
+        document.getElementById("progressText").innerText = `第${now}题 / 共${total}题`;
+        document.getElementById("progressBar").style.width = percent + "%";
+    }
+
+    function answerYes(){
+        answerRecord.push(true);
+        nextQuestion();
+    }
+    function answerNo(){
+        answerRecord.push(false);
+        nextQuestion();
+    }
+
+    function nextQuestion(){
+        currentQ++;
+        if(currentQ >= questionList.length){
+            // 答完第三题，弹出警告框
+          alert("⚠️Chwmq警告\n1.本程序仅为朋友间娱乐整蛊工具，所有结果随机生成，不具备任何真实性；\n2.性取向属于公民人格隐私，请勿利用测试结果嘲讽、造谣、传播他人信息；\n3.随意揣测、公开议论他人隐私，可能涉嫌侵犯隐私权，需承担相应民事责任；");
+            document.getElementById("showSurname").innerText = surname;
+            switchPage("wheelPage");
+            setTimeout(startRotate,600);
+        }else{
+            showQuestion();
+            updateProgress();
+        }
+    }
+
+    function switchPage(id) {
+        document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+    }
+
+    function backStart() {
+        switchPage("page1");
+        document.getElementById("result").innerText = "";
+        document.getElementById("wheel").style.transform = "";
+        isRotating = false;
+    }
+
+    function startRotate() {
+        if (isRotating) return;
+        isRotating = true;
+        document.getElementById("result").innerText = "判断中...";
+
+        const wheel = document.getElementById("wheel");
+        const isMale = Math.random() > 0.5;
+
+        let baseRotate = 1800;
+        let randomAngle;
+        if(isMale){
+            randomAngle = baseRotate + Math.random() * 170;
+        }else{
+            randomAngle = baseRotate + 180 + Math.random() * 170;
+        }
+
+        wheel.style.transform = `rotate(${randomAngle}deg)`;
+
+        setTimeout(()=>{
+            if(isMale){
+                document.getElementById("result").innerText = `${surname} 先生被判定为Gay！`;
+            }else{
+                document.getElementById("result").innerText = `${surname} 先生不是Gay！`;
+            }
+            isRotating = false;
+        },100);
+    }
+</script>
+
+</body>
+</html>
